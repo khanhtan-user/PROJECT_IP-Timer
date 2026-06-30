@@ -144,11 +144,87 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 | Tên tín hiệu        | Hướng | Độ rộng| Mô tả chức năng                                         |
 +---------------------+-------+--------+---------------------------------------------------------+
 | sys_clk             | Input | 1-bit  | Xung clock chính của hệ thống                           |
-| sys_rst_n           | Input | 1-bit  | Reset hệ thống, bất đồng bộ, tích cực mức thấp (0)       |
+| sys_rst_n           | Input | 1-bit  | Reset hệ thống, bất đồng bộ, tích cực mức thấp (0)      |
 | cnt[63:0]           | Input | 64-bit | Giá trị bộ đếm hiện tại nhận từ khối Counter Core       |
-| tcmp[63:0]          | Input | 64-bit | Giá trị so sánh đặt trước (Ghép từ TCMP0 và TCMP1)       |
+| tcmp[63:0]          | Input | 64-bit | Giá trị so sánh đặt trước (Ghép từ TCMP0 và TCMP1)      |
 | int_en              | Input | 1-bit  | Bit cho phép xuất ngắt nhận từ khối Register            |
 | int_clr             | Input | 1-bit  | Tín hiệu xóa cờ ngắt (W1C) nhận từ khối Register        |
-| set                 | Output| 1-bit  | Tín hiệu kích khóa cờ ngắt (Match) gửi về khối Register  |
+| set                 | Output| 1-bit  | Tín hiệu kích khóa cờ ngắt (Match) gửi về khối Register |
 | tim_int             | Output| 1-bit  | Chân tín hiệu ngắt vật lý ngõ ra gửi tới CPU            |
 +---------------------+-------+--------+---------------------------------------------------------+
+
+```
+
+</details>
+
+## 4. Register Map
+
+Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các vùng địa chỉ không được định nghĩa hoạt động theo quy tắc **RAZ/WI** (Read As Zero / Write Ignored).
+
+<details>
+<summary><b>  Bảng tổng hợp thanh ghi (Register Summary)</b></summary>
+
+```text
++---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
+| Tên thanh ghi | Địa chỉ (Offset)| Loại (Type) | Giá trị Reset   | Mô tả tóm tắt chức năng                                 |
++---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
+| TCR           | 0x00            | RO/RW       | 32'h0000_0000   | Thanh ghi điều khiển Timer (Bật/tắt,cấu hình Prescaler) |
+| TDR0          | 0x04            | RW          | 32'h0000_0000   | 32-bit thấp của bộ đếm tiến 64-bit                      |
+| TDR1          | 0x08            | RW          | 32'h0000_0000   | 32-bit cao của bộ đếm tiến 64-bit                       |
+| TCMP0         | 0x0C            | RW          | 32'hFFFF_FFFF   | 32-bit thấp của giá trị so sánh ngắt                    |
+| TCMP1         | 0x10            | RW          | 32'hFFFF_FFFF   | 32-bit cao của giá trị so sánh ngắt                     |
+| TIER          | 0x14            | RO/RW       | 32'h0000_0000   | Thanh ghi cho phép xuất tín hiệu ngắt ra chân tim_int   |
+| TISR          | 0x18            | RW1C        | 32'h0000_0000   | Thanh ghi trạng thái ngắt (Pending bit), ghi 1 để xóa   |
+| THCSR         | 0x1C            | RO/RW       | 32'h0000_0000   | Thanh ghi gỡ lỗi (Chỉ kích hoạt ở Advanced Level)       |
++---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
+```
+
+</details>
+
+## 5. Verification Strategy
+
+Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testbench) , tập trung vào khả năng vận hành chính xác của các khối chức năng và sự tuân thủ giao thức APB.
+
+### 5.1. Mục tiêu kiểm thử
+* **Độ bao phủ chức năng:** Đạt 80-100% các yêu cầu chức năng (Functional Coverage).
+* **Tính toàn vẹn dữ liệu:** Đảm bảo không có xung đột giữa việc ghi từ APB và việc cập nhật nội bộ bộ đếm.
+* **Độ trễ tín hiệu:** Kiểm chứng thời điểm phát tín hiệu ngắt `tim_int` so với chu kỳ clock hệ thống.
+
+### 5.2. Nhóm các kịch bản kiểm thử (Test Case Suites)
+ > * Lưu ý: Danh sách chi tiết các kịch bản kiểm thử (Test Case Plan) và kết quả Coverage đã được lưu trữ chi tiết tại: /report/Verification_Plan/Verification_Plan.docx
+</details>
+
+### 5.3. Môi trường mô phỏng
+* **Simulator:** ModelSim / QuestaSim.
+* **Phương pháp:** Direct Test (viết file Testbench riêng cho từng module).
+* **Kết quả:** Tất cả 30+ testcases đều đạt kết quả PASS với log mô phỏng sạch (Clean Log).
+
+  ## 6. Verification Metrics & Coverage
+
+Để đảm bảo IP Timer vận hành đúng thiết kế, quá trình kiểm thử được đánh giá dựa trên các chỉ số (metrics) sau đây:
+
+### 6.1. Code Coverage (Độ bao phủ mã nguồn)
+Đo lường mức độ bao phủ của bộ Testbench đối với mã RTL:
+* **Statement Coverage:** Đảm bảo mọi dòng code trong `src/` đều đã được thực thi.
+* **Branch Coverage:** Kiểm tra tất cả các nhánh rẽ (if-else, case) đã được kích hoạt.
+
+### 6.2. Functional Coverage (Độ bao phủ chức năng)
+Đo lường mức độ bao phủ đối với các đặc tả chức năng (tạo bởi các Covergroup):
+* **Register Access:** Đảm bảo tất cả các thanh ghi đã được truy cập (đọc/ghi) ít nhất một lần.
+* **Prescaler Values:** Kiểm tra đầy đủ các tổ hợp giá trị chia tần (tương ứng với `div_val`).
+* **Interrupt Triggers:** Bao phủ các trường hợp ngắt xảy ra khi Timer đạt giá trị so sánh và trường hợp xóa ngắt (W1C).
+
+### 6.3. Kết quả báo cáo
+Mọi số liệu về Coverage được tổng hợp tự động sau mỗi lần chạy Simulation:
+> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Verification_Plan/Coverage/Coverage_Detail_Report.html`.*
+
+### 6.4. Code Coverage Summary
+Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
+> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Verification_Plan/Coverage/Coverage_Summary_Report.html`.*
+### 6.5. Code Coverage Exclusion Justification
+- Một số trường hợp một số nhánh code không thể đạt 100%, chúng tôi thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
+> *Chi tiết báo cáo xem tại: `/report/Verification_Plan/Justification/Justification_Table.docx`.*
+
+
+---
+

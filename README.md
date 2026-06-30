@@ -137,21 +137,18 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 </details>
 <details>
-<summary><b> Interrupt (interrupt.v)</b></summary>
+<summary><b> Interrupt Block (interrupt.v)</b></summary>
 
 ```text
-+---------------+--------+--------+---------------------------------------------------------------+
-| Tên tín hiệu  | Hướng  | Độ rộng| Mô tả chức năng                                               |
-+---------------+--------+--------+---------------------------------------------------------------+
-| cnt_en        | Input  | 1-bit  | Tín hiệu cho phép bộ đếm hoạt động                            |
-| tdr0_wr_sel   | Input  | 1-bit  | Chọn ghi 32-bit thấp của bộ đếm (TDR0)                        |
-| tdr1_wr_sel   | Input  | 1-bit  | Chọn ghi 32-bit cao của bộ đếm (TDR1)                         |
-| sys_rst_n     | Input  | 1-bit  | Reset bất đồng bộ, tích cực mức thấp                          |
-| sys_clk       | Input  | 1-bit  | Xung clock hệ thống                                           |
-| wdata         | Input  | 32-bit | Dữ liệu ghi vào bộ đếm                                        |
-| cnt           | Output | 64-bit | Giá trị hiện tại của bộ đếm 64-bit                            |
-+---------------+--------+--------+---------------------------------------------------------------+
-```
-
-</details>
-
++---------------------+-------+--------+---------------------------------------------------------+
+| Tên tín hiệu        | Hướng | Độ rộng| Mô tả chức năng                                         |
++---------------------+-------+--------+---------------------------------------------------------+
+| sys_clk             | Input | 1-bit  | Xung clock chính của hệ thống                           |
+| sys_rst_n           | Input | 1-bit  | Reset hệ thống, bất đồng bộ, tích cực mức thấp (0)       |
+| cnt[63:0]           | Input | 64-bit | Giá trị bộ đếm hiện tại nhận từ khối Counter Core       |
+| tcmp[63:0]          | Input | 64-bit | Giá trị so sánh đặt trước (Ghép từ TCMP0 và TCMP1)       |
+| int_en              | Input | 1-bit  | Bit cho phép xuất ngắt nhận từ khối Register            |
+| int_clr             | Input | 1-bit  | Tín hiệu xóa cờ ngắt (W1C) nhận từ khối Register        |
+| set                 | Output| 1-bit  | Tín hiệu kích khóa cờ ngắt (Match) gửi về khối Register  |
+| tim_int             | Output| 1-bit  | Chân tín hiệu ngắt vật lý ngõ ra gửi tới CPU            |
++---------------------+-------+--------+---------------------------------------------------------+

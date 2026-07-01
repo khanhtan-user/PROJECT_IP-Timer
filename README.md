@@ -267,7 +267,46 @@ Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
 
 
 ---
-## 8. Author
+## 8. How to Run
+
+### Yêu cầu
+* **Simulator:** ModelSim / QuestaSim
+* **OS:** Linux / Unix 
+
+### Các bước chạy simulation
+
+**8.1. Di chuyển vào thư mục sim:**
+```bash
+cd src/sim
+```
+
+**8.2. Chạy toàn bộ testcase:**
+```bash
+./report.csh cov
+sau đó
+./report.csh
+( kiểm tra kết quả Passed/Fail của các cases)
+```
+
+**8.3. Chạy từng testcase riêng lẻ:**
+```bash
+make all TESTNAME=apb_basic_chk
+make all TESTNAME=reg_chk_all
+make all TESTNAME=counter_control
+make all TESTNAME=interrupt_chk
+make all TESTNAME=no_stimulus_chk
+```
+
+**8.4. Xuất báo cáo coverage:**
+```bash
+make gen_cov
+vi coverage/Summary_report.txt
+hoặc
+vi coverage/Detail_report.txt
+```
+
+> **Lưu ý:** Kết quả log sau mỗi lần chạy được lưu tự động vào `src/sim/log/`. 
+## 9. Author
 
 | Thông tin | Chi tiết |
 |-----------|----------|

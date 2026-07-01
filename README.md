@@ -273,4 +273,4 @@ Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
 |-----------|----------|
 | **Họ và tên** | Trần Hồ Khánh Tân |
 | **Trường** | Đại Học FPT |
-| **Năm học** | 2024 – 2028 |
+

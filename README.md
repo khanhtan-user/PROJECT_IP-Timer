@@ -282,10 +282,10 @@ cd src/sim
 
 **8.2. Chạy toàn bộ testcase:**
 ```bash
+Bước 1 : Chạy toàn bộ
 ./report.csh cov
-sau đó
+Bước 2 :  kiểm tra kết quả Passed/Fail của các cases
 ./report.csh
-( kiểm tra kết quả Passed/Fail của các cases)
 ```
 
 **8.3. Chạy từng testcase riêng lẻ:**

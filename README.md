@@ -3,7 +3,12 @@
 
 <img width="504" height="291" alt="image" src="https://github.com/user-attachments/assets/5abafbbc-a18c-438f-9b9a-28b390003729" />
 
-### 1.Cấu trúc phân cấp thiết kế (Design Hierarchy)
+
+## 1. Project Overview & Status
+* **Design Specification:** Kiến trúc hệ thống và đặc tả chi tiết tại:  `docs/Design_Spec/Design_Spec.docx/`.
+* **Project Timeline:** Được lưu trữ chi tiết tại : ` report/time_line/time_line.xlxx/`.
+
+### 2.Cấu trúc phân cấp thiết kế  (Design Hierarchy)
 
 Lõi IP được tổ chức phân cấp mạch lạc từ module TOP xuống các module con tương ứng trong thư mục `rtl/`:
 
@@ -15,7 +20,7 @@ timer_top.v (Top-level Module)
 ├── counter.v            (Lõi bộ đếm tiến 64-bit)
 └── interrupt.v          (Khối quản lý & tạo tín hiệu ngắt)
 ```
-### 2. Khối chức năng chính (Functional Blocks)
+### 3. Khối chức năng chính (Functional Blocks)
 
 Hệ thống được thiết kế theo cấu trúc mô-đun hóa phân cấp (Hierarchical Design), bao gồm 5 khối chức năng lõi tương tác chặt chẽ với nhau:
 
@@ -44,7 +49,7 @@ Hệ thống được thiết kế theo cấu trúc mô-đun hóa phân cấp (H
   * Tiếp nhận tín hiệu tràn (`overflow`) từ khối Counter, kết hợp với bit cho phép ngắt để kích hoạt tín hiệu ngắt vật lý `tim_int` ra ngoài hệ thống.
   * Duy trì cờ trạng thái ngắt trong thanh ghi cho đến khi được xóa một cách hợp lệ bởi W1C (Write 1 To Clear).
     
-## 3. Signal Descriptions
+## 4. Signal Descriptions
 
 Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Signals) theo từng khối chức năng ( module) con trong hệ thống. Bấm chọn vào từng module để xem chi tiết bảng chân chân tín hiệu:
 
@@ -157,7 +162,7 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 </details>
 
-## 4. Register Map
+## 5. Register Map
 
 Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các vùng địa chỉ không được định nghĩa hoạt động theo quy tắc **RAZ/WI** (Read As Zero / Write Ignored).
 
@@ -181,49 +186,49 @@ Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các v
 
 </details>
 
-## 5. Verification Strategy
+## 6. Verification Strategy
 
 Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testbench) , tập trung vào khả năng vận hành chính xác của các khối chức năng và sự tuân thủ giao thức APB.
 
-### 5.1. Mục tiêu kiểm thử
+### 6.1. Mục tiêu kiểm thử
 * **Độ bao phủ chức năng:** Đạt 80-100% các yêu cầu chức năng (Functional Coverage).
 * **Tính toàn vẹn dữ liệu:** Đảm bảo không có xung đột giữa việc ghi từ APB và việc cập nhật nội bộ bộ đếm.
 * **Độ trễ tín hiệu:** Kiểm chứng thời điểm phát tín hiệu ngắt `tim_int` so với chu kỳ clock hệ thống.
 
-### 5.2. Nhóm các kịch bản kiểm thử (Test Case Suites)
- > * Lưu ý: Danh sách chi tiết các kịch bản kiểm thử (Test Case Plan) và kết quả Coverage đã được lưu trữ chi tiết tại: /report/Verification_Plan/Verification_Plan.docx
+### 6.2. Nhóm các kịch bản kiểm thử (Test Case Suites)
+ > * Lưu ý: Danh sách chi tiết các kịch bản kiểm thử (Test Case Plan) và kết quả chạy các test cases được lưu trữ chi tiết tại: /docx/Verification_Plan/Verification_Plan.docx
 </details>
 
-### 5.3. Môi trường mô phỏng
+### 6.3. Môi trường mô phỏng
 * **Simulator:** ModelSim / QuestaSim.
 * **Phương pháp:** Direct Test (viết file Testbench riêng cho từng module).
 * **Kết quả:** Tất cả 30+ testcases đều đạt kết quả PASS với log mô phỏng sạch (Clean Log).
 
-  ## 6. Verification Metrics & Coverage
+  ## 7. Verification Metrics & Coverage
 
 Để đảm bảo IP Timer vận hành đúng thiết kế, quá trình kiểm thử được đánh giá dựa trên các chỉ số (metrics) sau đây:
 
-### 6.1. Code Coverage (Độ bao phủ mã nguồn)
+### 7.1. Code Coverage (Độ bao phủ mã nguồn)
 Đo lường mức độ bao phủ của bộ Testbench đối với mã RTL:
 * **Statement Coverage:** Đảm bảo mọi dòng code trong `src/` đều đã được thực thi.
 * **Branch Coverage:** Kiểm tra tất cả các nhánh rẽ (if-else, case) đã được kích hoạt.
 
-### 6.2. Functional Coverage (Độ bao phủ chức năng)
+### 7.2. Functional Coverage (Độ bao phủ chức năng)
 Đo lường mức độ bao phủ đối với các đặc tả chức năng (tạo bởi các Covergroup):
 * **Register Access:** Đảm bảo tất cả các thanh ghi đã được truy cập (đọc/ghi) ít nhất một lần.
 * **Prescaler Values:** Kiểm tra đầy đủ các tổ hợp giá trị chia tần (tương ứng với `div_val`).
 * **Interrupt Triggers:** Bao phủ các trường hợp ngắt xảy ra khi Timer đạt giá trị so sánh và trường hợp xóa ngắt (W1C).
 
-### 6.3. Kết quả báo cáo
+### 7.3. Kết quả báo cáo
 Mọi số liệu về Coverage được tổng hợp tự động sau mỗi lần chạy Simulation:
-> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Verification_Plan/Coverage/Coverage_Detail_Report.html`.*
+> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Detail_Report.html`.*
 
-### 6.4. Code Coverage Summary
+### 7.4. Code Coverage Summary
 Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
-> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Verification_Plan/Coverage/Coverage_Summary_Report.html`.*
-### 6.5. Code Coverage Exclusion Justification
+> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Summary_Report.html`.*
+### 7.5. Code Coverage Exclusion Justification
 - Một số trường hợp một số nhánh code không thể đạt 100%, chúng tôi thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
-> *Chi tiết báo cáo xem tại: `/report/Verification_Plan/Justification/Justification_Table.docx`.*
+> *Chi tiết báo cáo xem tại: `/report/Justification/Justification_Table.docx`.*
 
 
 ---

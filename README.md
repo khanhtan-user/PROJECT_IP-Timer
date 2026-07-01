@@ -6,7 +6,42 @@
 
 ## 1. Project Overview & Status
 * **Design Specification:** Kiến trúc hệ thống và đặc tả chi tiết tại:  `docs/Design_Spec/Design_Spec.docx/`.
-* **Project Timeline:** Được lưu trữ chi tiết tại : ` report/time_line/time_line.xlxx/`.
+* **Project Timeline:** Được lưu trữ chi tiết tại : ` report/time_line/time_line.xlsx/`.
+  ### Repository Structure
+
+```text
+PROJECT_IP-Timer/
+├── src/
+│   ├── rtl/                  (timer_top.v và 5 module con)
+│   │   ├── timer_top.v
+│   │   ├── apb_slave.v
+│   │   ├── register.v
+│   │   ├── counter_control.v
+│   │   ├── counter.v
+│   │   └── interrupt.v
+│   ├── tb/                   (Testbench top-level)
+│   │   └── test_bench.v
+│   ├── sim/                  (Makefile và script chạy simulation)
+│   │   ├── Makefile
+│   │   ├── compile.f
+│   │   ├── pat.list
+│   │   └── report.csh
+│   └── testcases/            (5 file testcase, tổng cộng 30 test items)
+│       ├── apb_basic_chk.v
+│       ├── counter_control.v
+│       ├── interrupt_chk.v
+│       ├── no_stimulus_chk.v
+│       └── reg_chk_all.v
+|──docx/
+|    |──Design_Spec/            ( Design_Spec.docx)
+|    |──Verification_Plan/      ( Verification_Plan.docx)
+├── report/
+|   |──time_line/             (time_line.xlsx)
+│   ├── Coverage/             (Coverage Summary & Detail Report .html)
+│   └── Justification/        (Coverage Exclusion Justification Table .docx)
+├── refs/                     (Tài liệu tham khảo)
+└── README.md
+```
 
 ### 2.Cấu trúc phân cấp thiết kế  (Design Hierarchy)
 
@@ -202,7 +237,7 @@ Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testb
 ### 6.3. Môi trường mô phỏng
 * **Simulator:** ModelSim / QuestaSim.
 * **Phương pháp:** Direct Test (viết file Testbench riêng cho từng module).
-* **Kết quả:** Tất cả 30+ testcases đều đạt kết quả PASS với log mô phỏng sạch (Clean Log).
+* **Kết quả:** Tất cả 30 testcases(trong 5 file testcase) đều đạt kết quả PASS với log mô phỏng sạch (Clean Log).
 
   ## 7. Verification Metrics & Coverage
 

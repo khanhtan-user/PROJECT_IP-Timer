@@ -308,8 +308,11 @@ vi coverage/Detail_report.txt
 > **Lưu ý:** Kết quả log sau mỗi lần chạy được lưu tự động vào `src/sim/log/`. 
 ## 9. Author
 
-| Thông tin | Chi tiết |
-|-----------|----------|
-| **Họ và tên** | Trần Hồ Khánh Tân |
-| **Trường** | Đại Học FPT |
-
+| Thông tin | Chi tiết                                             |
+|-----------|------------------------------------------------------|
+| **Họ và tên** | Trần Hồ Khánh Tân                                |
+| **Trường**    | Đại Học FPT                                      |
+| **Chuyên ngành** |                                               |
+| **Khóa** | 2024 – 2028                                           |
+| **Hình thức** | Cá nhân (Individual Project)                     |
+| **Hướng dẫn** | Instructor — Phạm Thiều Khang - From ICTC Center |

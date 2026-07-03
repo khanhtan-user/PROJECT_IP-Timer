@@ -7,6 +7,7 @@
 ## 1. Project Overview & Status
 * **Design Specification:** Kiến trúc hệ thống và đặc tả chi tiết tại:  `docs/Design_Spec/Design_Spec.docx/`.
 * **Project Timeline:** Được lưu trữ chi tiết tại : ` report/time_line/time_line.xlsx/`.
+* **Debugging process:** Được lưu trữ chi tiết tại : `docx/Debug_log.md/`.
   ### Repository Structure
 
 ```text

@@ -77,12 +77,6 @@ task run_test;
 
 	$display("-----End of Part 4");
 	
-	//if ( err != 0) begin
-//		$display("Test_result FAILED");
-//	end
-//	else begin
-//		$display("Test_result PASSED");
-//	end
 
 
 end

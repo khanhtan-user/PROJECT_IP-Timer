@@ -319,7 +319,7 @@ vi coverage/Detail_report.txt
 |-----------|------------------------------------------------------|
 | **Họ và tên** | Trần Hồ Khánh Tân                                |
 | **Trường**    | Đại Học FPT                                      |
-| **Chuyên ngành** |                                               |
+| **Chuyên ngành** | Thiết kế vi mạch bán dẫn                      |
 | **Khóa** | 2024 – 2028                                           |
 | **Hình thức** | Cá nhân (Individual Project)                     |
 | **Hướng dẫn** | Instructor — Phạm Thiều Khang - From ICTC Center |

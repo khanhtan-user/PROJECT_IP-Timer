@@ -7,7 +7,7 @@ module counter_control(
 	output cnt_en);
 reg [7:0] cnt_int;
 wire [7:0] limit = ( 8'h1 << div_val ) - 8'h1;
-//wire cnt_rst = ~timer_en || ~div_en || (cnt_int == limit);
+
 
 always @(posedge sys_clk or negedge sys_rst_n) begin
 		if ( !sys_rst_n) begin
@@ -23,6 +23,6 @@ always @(posedge sys_clk or negedge sys_rst_n) begin
 		end
 	end
 assign cnt_en = ( timer_en & ~div_en) || (( div_val != 0) & timer_en & div_en & ( cnt_int == limit)) || ((div_val == 0) & timer_en & div_en);
-//assign cnt_en = ( timer_en && div_en) && ((div_val == 0) || ( cnt_int == limit));
+
 endmodule 
 

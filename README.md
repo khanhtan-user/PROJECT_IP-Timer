@@ -39,7 +39,8 @@ PROJECT_IP-Timer/
 │       └── reg_chk_all.v
 |──docx/
 |    |──Design_Spec/            ( Design_Spec.docx)
-|    |──Verification_Plan/      ( Verification_Plan.docx)
+|    |──Verification_Plan/    ( Verification_Plan.docx)
+│    └── Debug_log.md
 ├── report/
 |   |──time_line/             (time_line.xlsx)
 │   ├── Coverage/             ( Summary_Report.txt & Detail Report.txt)

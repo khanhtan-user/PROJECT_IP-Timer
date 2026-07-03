@@ -215,7 +215,7 @@ Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các v
 +---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
 | Tên thanh ghi | Địa chỉ (Offset)| Loại (Type) | Giá trị Reset   | Mô tả tóm tắt chức năng                                 |
 +---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
-| TCR           | 0x00            | RO/RW       | 32'h0000_0000   | Thanh ghi điều khiển Timer (Bật/tắt,cấu hình Prescaler) |
+| TCR           | 0x00            | RO/RW       | 32'h0000_0100   | Thanh ghi điều khiển Timer (Bật/tắt,cấu hình Prescaler) |
 | TDR0          | 0x04            | RW          | 32'h0000_0000   | 32-bit thấp của bộ đếm tiến 64-bit                      |
 | TDR1          | 0x08            | RW          | 32'h0000_0000   | 32-bit cao của bộ đếm tiến 64-bit                       |
 | TCMP0         | 0x0C            | RW          | 32'hFFFF_FFFF   | 32-bit thấp của giá trị so sánh ngắt                    |

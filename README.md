@@ -23,9 +23,14 @@ PROJECT_IP-Timer/
 │   │   └── test_bench.v
 │   ├── sim/                  (Makefile và script chạy simulation)
 │   │   ├── Makefile
+|   |   ├── tb.f
+|   |   ├── rtl.f
+|   |   ├── run.csh
+|   |   ├── run_test.v
 │   │   ├── compile.f
 │   │   ├── pat.list
 │   │   └── report.csh
+|   |  
 │   └── testcases/            (5 file testcase, tổng cộng 30 test items)
 │       ├── apb_basic_chk.v
 │       ├── counter_control.v
@@ -37,7 +42,7 @@ PROJECT_IP-Timer/
 |    |──Verification_Plan/      ( Verification_Plan.docx)
 ├── report/
 |   |──time_line/             (time_line.xlsx)
-│   ├── Coverage/             (Coverage Summary & Detail Report .html)
+│   ├── Coverage/             ( Summary_Report.txt & Detail Report.txt)
 │   └── Justification/        (Coverage Exclusion Justification Table .docx)
 ├── refs/                     (Tài liệu tham khảo)
 └── README.md

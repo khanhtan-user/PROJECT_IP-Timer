@@ -1,1 +1,13 @@
+# ModelSim/Questa build artifacts
+sim/log/
+sim/work/
+sim/*.log
+sim/*.ucdb
+sim/modelsim.ini
+sim/transcript
+sim/vsim.dbg
+sim/vsim.wlf
 
+# Giữ lại thư mục report/ chứa coverage report và exclusion justification
+!report/
+!report/**

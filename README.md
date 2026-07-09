@@ -21,7 +21,8 @@ PROJECT_IP-Timer/
 │   │   ├── counter.v
 │   │   └── interrupt.v
 │   ├── tb/                   (Testbench top-level)
-│   │   └── test_bench.v
+│   │   ├── test_bench.v
+│   │   ├── waveform.md
 │   ├── sim/                  (Makefile và script chạy simulation)
 │   │   ├── Makefile
 |   |   ├── tb.f
@@ -38,6 +39,7 @@ PROJECT_IP-Timer/
 │       ├── interrupt_chk.v
 │       ├── no_stimulus_chk.v
 │       └── reg_chk_all.v
+│  
 |──docx/
 |    |──Design_Spec/            ( Design_Spec.docx)
 |    |──Verification_Plan/    ( Verification_Plan.docx)

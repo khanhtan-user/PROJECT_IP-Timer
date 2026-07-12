@@ -265,10 +265,10 @@ Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testb
 Mọi số liệu về Coverage được tổng hợp tự động sau mỗi lần chạy Simulation:
 > *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Detail_Report.html`.*
 
-### 7.4. Code Coverage Summary
+### 7.4. Coverage Summary
 Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
 > *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Summary_Report.html`.*
-### 7.5. Code Coverage Exclusion Justification
+### 7.5.Coverage Exclusion Justification
 - Một số trường hợp một số nhánh code không thể đạt 100%, tôi đã thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
 > *Chi tiết báo cáo xem tại: `/report/Justification/Justification_Table.docx`.*
 

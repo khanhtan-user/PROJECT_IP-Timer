@@ -39,7 +39,6 @@ PROJECT_IP-Timer/
 │       ├── interrupt_chk.v
 │       ├── no_stimulus_chk.v
 │       └── reg_chk_all.v
-│  
 |──docx/
 |    |──Design_Spec/            ( Design_Spec.docx)
 |    |──Verification_Plan/    ( Verification_Plan.docx)
@@ -48,7 +47,6 @@ PROJECT_IP-Timer/
 |   |──time_line/             (time_line.xlsx)
 │   ├── Coverage/             ( Summary_Report.txt & Detail Report.txt)
 │   └── Justification/        (Coverage Exclusion Justification Table .docx)
-├── refs/                     (Tài liệu tham khảo)
 └── README.md
 ```
 
@@ -271,7 +269,7 @@ Mọi số liệu về Coverage được tổng hợp tự động sau mỗi l�
 Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
 > *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Summary_Report.html`.*
 ### 7.5. Code Coverage Exclusion Justification
-- Một số trường hợp một số nhánh code không thể đạt 100%, chúng tôi thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
+- Một số trường hợp một số nhánh code không thể đạt 100%, tôi đã thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
 > *Chi tiết báo cáo xem tại: `/report/Justification/Justification_Table.docx`.*
 
 
@@ -292,7 +290,7 @@ cd src/sim
 **8.2. Chạy toàn bộ testcase:**
 ```bash
 Bước 1 : Chạy toàn bộ
-./report.csh cov
+./run.csh 
 Bước 2 :  kiểm tra kết quả Passed/Fail của các cases
 ./report.csh
 ```
@@ -308,6 +306,7 @@ make all TESTNAME=no_stimulus_chk
 
 **8.4. Xuất báo cáo coverage:**
 ```bash
+./run.csh cov
 make gen_cov
 vi coverage/Summary_report.txt
 hoặc

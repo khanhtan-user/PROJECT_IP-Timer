@@ -233,7 +233,7 @@ Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các v
 Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testbench) , tập trung vào khả năng vận hành chính xác của các khối chức năng và sự tuân thủ giao thức APB.
 
 ### 6.1. Mục tiêu kiểm thử
-* **Độ bao phủ chức năng:** Đạt 80-100% các yêu cầu chức năng (Functional Coverage).
+* **Độ bao phủ chức năng:** Đạt 100% các yêu cầu chức năng (Functional Coverage).
 * **Tính toàn vẹn dữ liệu:** Đảm bảo không có xung đột giữa việc ghi từ APB và việc cập nhật nội bộ bộ đếm.
 * **Độ trễ tín hiệu:** Kiểm chứng thời điểm phát tín hiệu ngắt `tim_int` so với chu kỳ clock hệ thống.
 

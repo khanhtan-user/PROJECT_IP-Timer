@@ -1,29 +1,29 @@
-# PROJECT_IP-Timer ( Standard)
-- Đây là IP Core Timer tiêu chuẩn, hỗ trợ giao tiếp cấu hình qua bus APB (APB Slave Interface), có khả năng tạo ngắt (interrupt) và đếm xung với độ phân giải cao
+# PROJECT_IP-Timer (Standard)
+- This is a standard Timer IP Core that supports configuration through the APB bus (APB Slave Interface), can generate interrupts, and counts clock pulses with high resolution.
 
 <img width="504" height="291" alt="image" src="https://github.com/user-attachments/assets/5abafbbc-a18c-438f-9b9a-28b390003729" />
 
 
 ## 1. Project Overview & Status
-* **Design Specification:** Kiến trúc hệ thống và đặc tả chi tiết tại:  `docs/Design_Spec/Design_Spec.docx/`.
-* **Project Timeline:** Được lưu trữ chi tiết tại : ` report/time_line/time_line.xlsx/`.
-* **Debugging process:** Được lưu trữ chi tiết tại : `docx/Debug_log.md/`.
+* **Design Specification:** System architecture and detailed specification are available at: `docs/Design_Spec/Design_Spec.docx/`.
+* **Project Timeline:** Stored in detail at: `report/time_line/time_line.xlsx/`.
+* **Debugging process:** Stored in detail at: `docx/Debug_log.md/`.
   ### Repository Structure
 
 ```text
 PROJECT_IP-Timer/
 ├── src/
-│   ├── rtl/                  (timer_top.v và 5 module con)
+│   ├── rtl/                  (timer_top.v and 5 submodules)
 │   │   ├── timer_top.v
 │   │   ├── apb_slave.v
 │   │   ├── register.v
 │   │   ├── counter_control.v
 │   │   ├── counter.v
 │   │   └── interrupt.v
-│   ├── tb/                   (Testbench top-level)
+│   ├── tb/                   (Top-level testbench)
 │   │   ├── test_bench.v
 │   │   ├── waveform.md
-│   ├── sim/                  (Makefile và script chạy simulation)
+│   ├── sim/                  (Makefile and simulation run scripts)
 │   │   ├── Makefile
 |   |   ├── tb.f
 |   |   ├── rtl.f
@@ -33,7 +33,7 @@ PROJECT_IP-Timer/
 │   │   ├── pat.list
 │   │   └── report.csh
 |   |  
-│   └── testcases/            (5 file testcase, tổng cộng 30 test items)
+│   └── testcases/            (5 testcase files, 30 test items in total)
 │       ├── apb_basic_chk.v
 │       ├── counter_control.v
 │       ├── interrupt_chk.v
@@ -50,71 +50,71 @@ PROJECT_IP-Timer/
 └── README.md
 ```
 
-### 2.Cấu trúc phân cấp thiết kế  (Design Hierarchy)
+### 2. Design Hierarchy
 
-Lõi IP được tổ chức phân cấp mạch lạc từ module TOP xuống các module con tương ứng trong thư mục `rtl/`:
+The IP core is organized in a clean hierarchy, from the TOP module down to the corresponding submodules in the `rtl/` directory:
 
 ```text
 timer_top.v (Top-level Module)
-├── apb_slave.v          (Khối giao tiếp APB Slave)
-├── register.v           (Khối tập thanh ghi cấu hình)
-├── counter_control.v    (Khối điều khiển & chia tần Prescaler)
-├── counter.v            (Lõi bộ đếm tiến 64-bit)
-└── interrupt.v          (Khối quản lý & tạo tín hiệu ngắt)
+├── apb_slave.v          (APB Slave interface block)
+├── register.v           (Configuration register set)
+├── counter_control.v    (Control block & Prescaler clock divider)
+├── counter.v            (64-bit up-counter core)
+└── interrupt.v          (Interrupt management & generation block)
 ```
-### 3. Khối chức năng chính (Functional Blocks)
+### 3. Functional Blocks
 
-Hệ thống được thiết kế theo cấu trúc mô-đun hóa phân cấp (Hierarchical Design), bao gồm 5 khối chức năng lõi tương tác chặt chẽ với nhau:
+The system is designed with a hierarchical, modular architecture consisting of 5 core functional blocks that interact closely with one another:
 
 * **APB Slave Interface (`apb_slave.v`):** 
-  * Đóng vai trò là khối giao tiếp ngoại vi.
-  * Thực hiện giải mã địa chỉ (`paddr`), bắt các tín hiệu điều khiển (`psel`, `penable`, `pwrite`) từ APB Bus để tạo ra các xung điều khiển đọc/ghi nội bộ (`wr_en`, `rd_en`).
-  * Phản hồi trạng thái sẵn sàng (`pready`) và báo lỗi (`pslverr`) về hệ thống.
+  * Acts as the peripheral interface block.
+  * Decodes the address (`paddr`) and captures the control signals (`psel`, `penable`, `pwrite`) from the APB Bus to generate internal read/write strobes (`wr_en`, `rd_en`).
+  * Responds with the ready status (`pready`) and reports errors (`pslverr`) back to the system.
 
 * **Register Block (`register.v`):**
-  * Nơi lưu trữ hệ thống các thanh ghi cấu hình, điều khiển và trạng thái của IP.
-  * Cập nhật dữ liệu ghi (`wdata`) từ bus hoặc dữ liệu nội bộ từ bộ đếm/khối ngắt, đồng thời đẩy dữ liệu đọc (`rdata`) ra APB Bus khi có yêu cầu.
-  * Cung cấp các thông số cấu hình (`div_val`, `timer_en`) cho khối điều khiển đếm.
+  * Stores the IP's configuration, control, and status registers.
+  * Updates register contents with write data (`wdata`) from the bus or with internal data from the counter/interrupt blocks, and drives read data (`rdata`) onto the APB Bus on request.
+  * Provides configuration parameters (`div_val`, `timer_en`) to the counter control block.
 
 * **Counter Control (`counter_control.v`):**
-  * Bộ não điều khiển trung gian của mạch đếm.
-  * Tiếp nhận giá trị cấu hình bộ chia xung (`div_val`) và trạng thái cho phép chạy (`timer_en`) từ khối thanh ghi để tính toán thời điểm kích hoạt bộ đếm (`cnt_en`).
-  * Đảm bảo bộ đếm hoạt động đồng bộ với hệ thống hoặc tạm dừng chính xác theo đúng cấu hình.
+  * Serves as the intermediate control unit of the counting circuit.
+  * Receives the clock divider configuration (`div_val`) and the run-enable status (`timer_en`) from the register block to determine when to activate the counter (`cnt_en`).
+  * Ensures the counter runs in sync with the system clock or halts precisely according to the configuration.
 
 * **Counter Core (`counter.v`):**
-  * Lõi thực thi đếm thời gian dựa trên tín hiệu cho phép (`cnt_en`).
-  * Thực hiện logic đếm tích lũy và phát hiện trạng thái tràn bộ đếm (`overflow`) khi đạt tới giá trị đặt trước hoặc giới hạn bit.
-  * Phản hồi liên tục giá trị đếm hiện tại về khối thanh ghi để người dùng có thể đọc được.
+  * The core that performs time counting based on the enable signal (`cnt_en`).
+  * Implements the accumulating count logic and detects counter overflow (`overflow`) when reaching a preset value or the bit-width limit.
+  * Continuously feeds the current count value back to the register block so the user can read it.
 
 * **Interrupt Block (`interrupt.v`):**
-  * Quản lý toàn bộ cơ chế báo ngắt của IP Core.
-  * Tiếp nhận tín hiệu tràn (`overflow`) từ khối Counter, kết hợp với bit cho phép ngắt để kích hoạt tín hiệu ngắt vật lý `tim_int` ra ngoài hệ thống.
-  * Duy trì cờ trạng thái ngắt trong thanh ghi cho đến khi được xóa một cách hợp lệ bởi W1C (Write 1 To Clear).
+  * Manages the entire interrupt mechanism of the IP Core.
+  * Receives the overflow signal (`overflow`) from the Counter block and combines it with the interrupt enable bit to drive the physical interrupt signal `tim_int` out to the system.
+  * Holds the interrupt status flag in the register until it is validly cleared by W1C (Write 1 To Clear).
     
 ## 4. Signal Descriptions
 
-Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Signals) theo từng khối chức năng ( module) con trong hệ thống. Bấm chọn vào từng module để xem chi tiết bảng chân chân tín hiệu:
+Below are the detailed descriptions of the input/output signals (I/O Signals) for each functional submodule in the system. Click each module to view its signal table:
 
 <details>
 <summary><b> APB Slave Interface (apb_slave.v)</b></summary>
 
 ```text
 +----------------+--------+--------+-------------------------------------------------------------+
-| Tên tín hiệu   | Hướng  | Độ rộng| Mô tả chức năng                                             |
+| Signal name    | Dir.   | Width  | Description                                                 |
 +----------------+--------+--------+-------------------------------------------------------------+
-| tim_psel       | Input  | 1-bit  | Tín hiệu chọn APB Slave từ APB Master                       |
-| tim_pwrite     | Input  | 1-bit  | Điều khiển chu kỳ (0: Đọc, 1: Ghi)                          |
-| tim_penable    | Input  | 1-bit  | Kích hoạt pha Access của bus APB                            |
-| tim_paddr      | Input  | 12-bit | Địa chỉ thanh ghi APB                                       |
-| rdata          | Input  | 32-bit | Dữ liệu đọc từ khối Register gửi về APB Slave               |
-| tim_pwdata     | Input  | 32-bit | Dữ liệu ghi từ APB Master                                   |
-| wdata          | Output | 32-bit | Dữ liệu ghi chuyển sang khối Register                       |
-| tim_prdata     | Output | 32-bit | Dữ liệu đọc trả về APB Master                               |
-| addr           | Output | 12-bit | Địa chỉ nội bộ chuyển sang khối Register                    |
-| wr_en          | Output | 1-bit  | Xung cho phép ghi thanh ghi                                 |
-| rd_en          | Output | 1-bit  | Xung cho phép đọc thanh ghi                                 |
-| tim_pslverr    | Output | 1-bit  | Báo lỗi APB (luôn giữ mức 0 trong thiết kế này)             |
-| pready         | Output | 1-bit  | Báo Slave sẵn sàng (luôn giữ mức 1 trong thiết kế này)      |
+| tim_psel       | Input  | 1-bit  | APB Slave select signal from the APB Master                 |
+| tim_pwrite     | Input  | 1-bit  | Transfer direction control (0: Read, 1: Write)              |
+| tim_penable    | Input  | 1-bit  | Enables the Access phase of the APB bus                     |
+| tim_paddr      | Input  | 12-bit | APB register address                                        |
+| rdata          | Input  | 32-bit | Read data sent from the Register block to the APB Slave     |
+| tim_pwdata     | Input  | 32-bit | Write data from the APB Master                              |
+| wdata          | Output | 32-bit | Write data forwarded to the Register block                  |
+| tim_prdata     | Output | 32-bit | Read data returned to the APB Master                        |
+| addr           | Output | 12-bit | Internal address forwarded to the Register block            |
+| wr_en          | Output | 1-bit  | Register write enable strobe                                |
+| rd_en          | Output | 1-bit  | Register read enable strobe                                 |
+| tim_pslverr    | Output | 1-bit  | APB error indication (always held at 0 in this design)      |
+| pready         | Output | 1-bit  | Slave ready indication (always held at 1 in this design)    |
 +----------------+--------+--------+-------------------------------------------------------------+
 ```
 
@@ -125,25 +125,25 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
   
 ```text
 +---------------+--------+--------+------------------------------------------------------------------+
-| Tên tín hiệu  | Hướng  | Độ rộng| Mô tả chức năng                                                  |
+| Signal name   | Dir.   | Width  | Description                                                      |
 +---------------+--------+--------+------------------------------------------------------------------+
-| sys_clk       | Input  | 1-bit  | Xung clock hệ thống                                              |
-| sys_rst_n     | Input  | 1-bit  | Reset bất đồng bộ, tích cực mức thấp                             |
-| rd_en         | Input  | 1-bit  | Tín hiệu cho phép đọc thanh ghi                                  |
-| wr_en         | Input  | 1-bit  | Tín hiệu cho phép ghi thanh ghi                                  |
-| cnt           | Input  | 64-bit | Giá trị hiện tại của bộ đếm                                      |
-| addr          | Input  | 12-bit | Địa chỉ thanh ghi cần truy cập                                   |
-| wdata         | Input  | 32-bit | Dữ liệu ghi vào thanh ghi                                        |
-| int_st        | Input  | 1-bit  | Trạng thái ngắt từ khối Interrupt                                |
-| div_en        | Output | 1-bit  | Cho phép khối Prescaler hoạt động                                |
-| div_val       | Output | 4-bit  | Giá trị chia tần Prescaler                                       |
-| timer_en      | Output | 1-bit  | Cho phép bộ đếm Timer hoạt động                                  |
-| int_en        | Output | 1-bit  | Cho phép tạo tín hiệu ngắt                                       |
-| tdr0_wr_sel   | Output | 1-bit  | Chọn ghi thanh ghi Timer Data Register 0 (TDR0)                  |
-| tdr1_wr_sel   | Output | 1-bit  | Chọn ghi thanh ghi Timer Data Register 1 (TDR1)                  |
-| tcmp          | Output | 64-bit | Giá trị so sánh (Compare Value) gửi tới Counter                  |
-| clear         | Output | 1-bit  | Yêu cầu xóa (clear) bộ đếm                                       |
-| rdata         | Output | 32-bit | Dữ liệu đọc từ thanh ghi trả về APB Slave                        |
+| sys_clk       | Input  | 1-bit  | System clock                                                     |
+| sys_rst_n     | Input  | 1-bit  | Asynchronous reset, active low                                   |
+| rd_en         | Input  | 1-bit  | Register read enable                                             |
+| wr_en         | Input  | 1-bit  | Register write enable                                            |
+| cnt           | Input  | 64-bit | Current counter value                                            |
+| addr          | Input  | 12-bit | Address of the register to access                                |
+| wdata         | Input  | 32-bit | Data to write into the register                                  |
+| int_st        | Input  | 1-bit  | Interrupt status from the Interrupt block                        |
+| div_en        | Output | 1-bit  | Enables the Prescaler block                                      |
+| div_val       | Output | 4-bit  | Prescaler divide value                                           |
+| timer_en      | Output | 1-bit  | Enables the Timer counter                                        |
+| int_en        | Output | 1-bit  | Enables interrupt signal generation                              |
+| tdr0_wr_sel   | Output | 1-bit  | Write select for Timer Data Register 0 (TDR0)                    |
+| tdr1_wr_sel   | Output | 1-bit  | Write select for Timer Data Register 1 (TDR1)                    |
+| tcmp          | Output | 64-bit | Compare value sent to the Counter                                |
+| clear         | Output | 1-bit  | Request to clear the counter                                     |
+| rdata         | Output | 32-bit | Register read data returned to the APB Slave                     |
 +---------------+--------+--------+------------------------------------------------------------------+
 ```
 
@@ -154,14 +154,14 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 ```text
 +---------------+--------+--------+---------------------------------------------------------------+
-| Tên tín hiệu  | Hướng  | Độ rộng| Mô tả chức năng                                               |
+| Signal name   | Dir.   | Width  | Description                                                   |
 +---------------+--------+--------+---------------------------------------------------------------+
-| sys_clk       | Input  | 1-bit  | Xung clock hệ thống                                           |
-| sys_rst_n     | Input  | 1-bit  | Reset bất đồng bộ, tích cực mức thấp                          |
-| timer_en      | Input  | 1-bit  | Cho phép Timer hoạt động                                      |
-| div_val       | Input  | 4-bit  | Giá trị chia tần Prescaler                                    |
-| div_en        | Input  | 1-bit  | Cho phép khối Prescaler hoạt động                             |
-| cnt_en        | Output | 1-bit  | Tín hiệu kích hoạt bộ đếm (Counter Enable)                    |
+| sys_clk       | Input  | 1-bit  | System clock                                                  |
+| sys_rst_n     | Input  | 1-bit  | Asynchronous reset, active low                                |
+| timer_en      | Input  | 1-bit  | Enables Timer operation                                       |
+| div_val       | Input  | 4-bit  | Prescaler divide value                                        |
+| div_en        | Input  | 1-bit  | Enables the Prescaler block                                   |
+| cnt_en        | Output | 1-bit  | Counter enable signal                                         |
 +---------------+--------+--------+---------------------------------------------------------------+
 ```
 
@@ -171,14 +171,14 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 ```text
 +---------------+--------+--------+---------------------------------------------------------------+
-| Tên tín hiệu  | Hướng  | Độ rộng| Mô tả chức năng                                               |
+| Signal name   | Dir.   | Width  | Description                                                   |
 +---------------+--------+--------+---------------------------------------------------------------+
-| tdr0_wr_sel   | Input  | 1-bit  | Chọn ghi 32-bit thấp của bộ đếm (TDR0)                        |
-| tdr1_wr_sel   | Input  | 1-bit  | Chọn ghi 32-bit cao của bộ đếm (TDR1)                         |
-| sys_rst_n     | Input  | 1-bit  | Reset bất đồng bộ, tích cực mức thấp                          |
-| sys_clk       | Input  | 1-bit  | Xung clock hệ thống                                           |
-| wdata         | Input  | 32-bit | Dữ liệu ghi vào bộ đếm                                        |
-| cnt           | Output | 64-bit | Giá trị hiện tại của bộ đếm 64-bit                            |
+| tdr0_wr_sel   | Input  | 1-bit  | Selects write to the lower 32 bits of the counter (TDR0)      |
+| tdr1_wr_sel   | Input  | 1-bit  | Selects write to the upper 32 bits of the counter (TDR1)      |
+| sys_rst_n     | Input  | 1-bit  | Asynchronous reset, active low                                |
+| sys_clk       | Input  | 1-bit  | System clock                                                  |
+| wdata         | Input  | 32-bit | Data to write into the counter                                |
+| cnt           | Output | 64-bit | Current value of the 64-bit counter                           |
 +---------------+--------+--------+---------------------------------------------------------------+
 ```
 
@@ -188,16 +188,16 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 ```text
 +---------------------+-------+--------+---------------------------------------------------------+
-| Tên tín hiệu        | Hướng | Độ rộng| Mô tả chức năng                                         |
+| Signal name         | Dir.  | Width  | Description                                             |
 +---------------------+-------+--------+---------------------------------------------------------+
-| sys_clk             | Input | 1-bit  | Xung clock chính của hệ thống                           |
-| sys_rst_n           | Input | 1-bit  | Reset hệ thống, bất đồng bộ, tích cực mức thấp (0)      |
-| cnt[63:0]           | Input | 64-bit | Giá trị bộ đếm hiện tại nhận từ khối Counter Core       |
-| tcmp[63:0]          | Input | 64-bit | Giá trị so sánh đặt trước (Ghép từ TCMP0 và TCMP1)      |
-| int_en              | Input | 1-bit  | Bit cho phép xuất ngắt nhận từ khối Register            |
-| int_clr             | Input | 1-bit  | Tín hiệu xóa cờ ngắt (W1C) nhận từ khối Register        |
-| set                 | Output| 1-bit  | Tín hiệu kích khóa cờ ngắt (Match) gửi về khối Register |
-| tim_int             | Output| 1-bit  | Chân tín hiệu ngắt vật lý ngõ ra gửi tới CPU            |
+| sys_clk             | Input | 1-bit  | Main system clock                                       |
+| sys_rst_n           | Input | 1-bit  | System reset, asynchronous, active low (0)              |
+| cnt[63:0]           | Input | 64-bit | Current counter value received from the Counter Core    |
+| tcmp[63:0]          | Input | 64-bit | Preset compare value (concatenated from TCMP0 and TCMP1)|
+| int_en              | Input | 1-bit  | Interrupt output enable bit from the Register block    |
+| int_clr             | Input | 1-bit  | Interrupt flag clear signal (W1C) from the Register block |
+| set                 | Output| 1-bit  | Signal that latches the interrupt flag (Match), sent to the Register block |
+| tim_int             | Output| 1-bit  | Physical interrupt output pin sent to the CPU           |
 +---------------------+-------+--------+---------------------------------------------------------+
 
 ```
@@ -206,23 +206,23 @@ Dưới đây là đặc tả chi tiết các tín hiệu ngõ vào/ra (I/O Sign
 
 ## 5. Register Map
 
-Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các vùng địa chỉ không được định nghĩa hoạt động theo quy tắc **RAZ/WI** (Read As Zero / Write Ignored).
+The configuration registers are 32 bits wide by default. Undefined address regions follow the **RAZ/WI** rule (Read As Zero / Write Ignored).
 
 <details>
-<summary><b>  Bảng tổng hợp thanh ghi (Register Summary)</b></summary>
+<summary><b>  Register Summary</b></summary>
 
 ```text
 +---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
-| Tên thanh ghi | Địa chỉ (Offset)| Loại (Type) | Giá trị Reset   | Mô tả tóm tắt chức năng                                 |
+| Register name | Address (Offset)| Type        | Reset value     | Brief description                                       |
 +---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
-| TCR           | 0x00            | RO/RW       | 32'h0000_0100   | Thanh ghi điều khiển Timer (Bật/tắt,cấu hình Prescaler) |
-| TDR0          | 0x04            | RW          | 32'h0000_0000   | 32-bit thấp của bộ đếm tiến 64-bit                      |
-| TDR1          | 0x08            | RW          | 32'h0000_0000   | 32-bit cao của bộ đếm tiến 64-bit                       |
-| TCMP0         | 0x0C            | RW          | 32'hFFFF_FFFF   | 32-bit thấp của giá trị so sánh ngắt                    |
-| TCMP1         | 0x10            | RW          | 32'hFFFF_FFFF   | 32-bit cao của giá trị so sánh ngắt                     |
-| TIER          | 0x14            | RO/RW       | 32'h0000_0000   | Thanh ghi cho phép xuất tín hiệu ngắt ra chân tim_int   |
-| TISR          | 0x18            | RW1C        | 32'h0000_0000   | Thanh ghi trạng thái ngắt (Pending bit), ghi 1 để xóa   |
-| THCSR         | 0x1C            | RO/RW       | 32'h0000_0000   | Thanh ghi gỡ lỗi (Chỉ kích hoạt ở Advanced Level)       |
+| TCR           | 0x00            | RO/RW       | 32'h0000_0100   | Timer control register (enable/disable, Prescaler cfg)  |
+| TDR0          | 0x04            | RW          | 32'h0000_0000   | Lower 32 bits of the 64-bit up-counter                  |
+| TDR1          | 0x08            | RW          | 32'h0000_0000   | Upper 32 bits of the 64-bit up-counter                  |
+| TCMP0         | 0x0C            | RW          | 32'hFFFF_FFFF   | Lower 32 bits of the interrupt compare value            |
+| TCMP1         | 0x10            | RW          | 32'hFFFF_FFFF   | Upper 32 bits of the interrupt compare value            |
+| TIER          | 0x14            | RO/RW       | 32'h0000_0000   | Interrupt enable register for the tim_int pin           |
+| TISR          | 0x18            | RW1C        | 32'h0000_0000   | Interrupt status register (pending bit), write 1 to clear |
+| THCSR         | 0x1C            | RO/RW       | 32'h0000_0000   | Debug register (only active at Advanced Level)          |
 +---------------+-----------------+-------------+-----------------+---------------------------------------------------------+
 ```
 
@@ -230,72 +230,72 @@ Hệ thống thanh ghi cấu hình có độ rộng mặc định 32-bit. Các v
 
 ## 6. Verification Strategy
 
-Hệ thống được kiểm thử dựa trên môi trường mô phỏng (Testbench) , tập trung vào khả năng vận hành chính xác của các khối chức năng và sự tuân thủ giao thức APB.
+The system is verified in a simulation environment (Testbench), focusing on the correct operation of the functional blocks and compliance with the APB protocol.
 
-### 6.1. Mục tiêu kiểm thử
-* **Độ bao phủ chức năng:** Đạt 100% các yêu cầu chức năng (Functional Coverage).
-* **Tính toàn vẹn dữ liệu:** Đảm bảo không có xung đột giữa việc ghi từ APB và việc cập nhật nội bộ bộ đếm.
-* **Độ trễ tín hiệu:** Kiểm chứng thời điểm phát tín hiệu ngắt `tim_int` so với chu kỳ clock hệ thống.
+### 6.1. Verification Goals
+* **Functional coverage:** Achieve 100% of the functional requirements (Functional Coverage).
+* **Data integrity:** Ensure there are no conflicts between writes from APB and internal counter updates.
+* **Signal latency:** Verify the timing of the `tim_int` interrupt signal relative to the system clock cycle.
 
-### 6.2. Nhóm các kịch bản kiểm thử (Test Case Suites)
- > * Lưu ý: Danh sách chi tiết các kịch bản kiểm thử (Test Case Plan) và kết quả chạy các test cases được lưu trữ chi tiết tại: /docx/Verification_Plan/Verification_Plan.docx
+### 6.2. Test Case Suites
+ > * Note: The detailed list of test scenarios (Test Case Plan) and the test run results are stored at: /docx/Verification_Plan/Verification_Plan.docx
 </details>
 
-### 6.3. Môi trường mô phỏng
+### 6.3. Simulation Environment
 * **Simulator:** ModelSim / QuestaSim.
-* **Phương pháp:** Direct Test (viết file Testbench riêng cho từng module).
-* **Kết quả:** Tất cả 30 testcases(trong 5 file testcase) đều đạt kết quả PASS với log mô phỏng sạch (Clean Log).
+* **Methodology:** Direct Test (a separate testbench file for each module).
+* **Result:** All 30 testcases (in 5 testcase files) PASS with a clean simulation log.
 
   ## 7. Verification Metrics & Coverage
 
-Để đảm bảo IP Timer vận hành đúng thiết kế, quá trình kiểm thử được đánh giá dựa trên các chỉ số (metrics) sau đây:
+To ensure the Timer IP operates as designed, verification is evaluated using the following metrics:
 
-### 7.1. Code Coverage (Độ bao phủ mã nguồn)
-Đo lường mức độ bao phủ của bộ Testbench đối với mã RTL:
-* **Statement Coverage:** Đảm bảo mọi dòng code trong `src/` đều đã được thực thi.
-* **Branch Coverage:** Kiểm tra tất cả các nhánh rẽ (if-else, case) đã được kích hoạt.
+### 7.1. Code Coverage
+Measures how much of the RTL code is covered by the testbench:
+* **Statement Coverage:** Ensures every line of code in `src/` has been executed.
+* **Branch Coverage:** Checks that all branches (if-else, case) have been exercised.
 
-### 7.2. Functional Coverage (Độ bao phủ chức năng)
-Đo lường mức độ bao phủ đối với các đặc tả chức năng (tạo bởi các Covergroup):
-* **Register Access:** Đảm bảo tất cả các thanh ghi đã được truy cập (đọc/ghi) ít nhất một lần.
-* **Prescaler Values:** Kiểm tra đầy đủ các tổ hợp giá trị chia tần (tương ứng với `div_val`).
-* **Interrupt Triggers:** Bao phủ các trường hợp ngắt xảy ra khi Timer đạt giá trị so sánh và trường hợp xóa ngắt (W1C).
+### 7.2. Functional Coverage
+Measures coverage of the functional specification (generated by Covergroups):
+* **Register Access:** Ensures every register has been accessed (read/write) at least once.
+* **Prescaler Values:** Thoroughly checks all divider value combinations (corresponding to `div_val`).
+* **Interrupt Triggers:** Covers the cases where an interrupt occurs when the Timer reaches the compare value, as well as interrupt clearing (W1C).
 
-### 7.3. Kết quả báo cáo
-Mọi số liệu về Coverage được tổng hợp tự động sau mỗi lần chạy Simulation:
-> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Detail_Report.html`.*
+### 7.3. Coverage Reports
+All coverage data is automatically compiled after each simulation run:
+> *For the detailed coverage report, see: `/report/Coverage/detail_report.txt`.*
 
 ### 7.4. Coverage Summary
-Bảng tổng hợp độ bao phủ của toàn bộ hệ thống :
-> *Chi tiết báo cáo độ bao phủ (Coverage Report) xem tại: `/report/Coverage/Coverage_Summary_Report.html`.*
-### 7.5.Coverage Exclusion Justification
-- Một số trường hợp một số nhánh code không thể đạt 100%, tôi đã thực hiện loại trừ (exclude) dựa trên lý do logic phần cứng và các lý do logic khác.
-> *Chi tiết báo cáo xem tại: `/report/Justification/Justification_Table.docx`.*
+Summary table of coverage for the entire system:
+> *For the coverage summary report, see: `/report/Coverage/summary_report.txt`.*
+### 7.5. Coverage Exclusion Justification
+- In some cases certain code branches cannot reach 100% coverage; I excluded them based on hardware logic and other justified reasons.
+> *For the detailed report, see: `/report/Justification/Justification_Table.docx`.*
 
 
 ---
 ## 8. How to Run
 
-### Yêu cầu
+### Requirements
 * **Simulator:** ModelSim / QuestaSim
 * **OS:** Linux / Unix 
 
-### Các bước chạy simulation
+### Simulation Steps
 
-**8.1. Di chuyển vào thư mục sim:**
+**8.1. Change into the sim directory:**
 ```bash
 cd src/sim
 ```
 
-**8.2. Chạy toàn bộ testcase:**
+**8.2. Run all testcases:**
 ```bash
-Bước 1 : Chạy toàn bộ
+Step 1: Run everything
 ./run.csh 
-Bước 2 :  kiểm tra kết quả Passed/Fail của các cases
+Step 2: Check the Passed/Fail results of the cases
 ./report.csh
 ```
 
-**8.3. Chạy từng testcase riêng lẻ:**
+**8.3. Run individual testcases:**
 ```bash
 make all TESTNAME=apb_basic_chk
 make all TESTNAME=reg_chk_all
@@ -304,23 +304,23 @@ make all TESTNAME=interrupt_chk
 make all TESTNAME=no_stimulus_chk
 ```
 
-**8.4. Xuất báo cáo coverage:**
+**8.4. Generate the coverage report:**
 ```bash
 ./run.csh cov
 make gen_cov
-vi coverage/Summary_report.txt
-hoặc
-vi coverage/Detail_report.txt
+vi coverage/summary_report.txt
+or
+vi coverage/detail_report.txt
 ```
 
-> **Lưu ý:** Kết quả log sau mỗi lần chạy được lưu tự động vào `src/sim/log/`. 
+> **Note:** The log from each run is saved automatically to `src/sim/log/`. 
 ## 9. Author
 
-| Thông tin | Chi tiết                                             |
-|-----------|------------------------------------------------------|
-| **Họ và tên** | Trần Hồ Khánh Tân                                |
-| **Trường**    | Đại Học FPT                                      |
-| **Chuyên ngành** | Thiết kế vi mạch bán dẫn                      |
-| **Khóa** | 2024 – 2028                                           |
-| **Hình thức** | Cá nhân (Individual Project)                     |
-| **Hướng dẫn** | Instructor — Phạm Thiều Khang - From ICTC Center |
+| Information | Details                                              |
+|-------------|------------------------------------------------------|
+| **Full name**  | Trần Hồ Khánh Tân                                 |
+| **University** | FPT University                                    |
+| **Major**      | Semiconductor IC Design                           |
+| **Cohort**     | 2024 – 2028                                       |
+| **Type**       | Individual Project                                |
+| **Supervisor** | Instructor — Phạm Thiều Khang - From ICTC Center  |

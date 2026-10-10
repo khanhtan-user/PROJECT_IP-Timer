@@ -1,95 +1,100 @@
 # Debug Log — PROJECT_IP-Timer (Standard Level)
 
-- Tài liệu này ghi lại quá trình phát hiện và xử lý các vấn đề thực tế trong quá trình thiết kế RTL và verification của Timer IP.
-- Tác giả : Trần Hồ Khánh Tân.
-- Thực hiện : 15/06/2026 - 23/06/2026
+- This document records how real issues were found and resolved during the RTL design and verification of the Timer IP.
+- Author: Trần Hồ Khánh Tân.
+- Period: 15/06/2026 - 23/06/2026
 ---
 
-## Bug #1 — Chiều rộng dây không khớp trong `apb_slave.v`
+## Bug #1 — Wire width mismatch in `apb_slave.v`
 
-**Giai đoạn:** RTL bring-up, trước khi chạy testcase đầu tiên.
+**Phase:** RTL bring-up, before running the first testcase.
 
-**Triệu chứng:** Compile RTL báo lỗi/warning liên quan đến độ rộng wire không khớp giữa signal khai báo và signal được assign trong `apb_slave.v`.
+**Symptom:** RTL compilation reported errors/warnings about a width mismatch between a declared signal and the signal assigned to it in `apb_slave.v`.
 
-**Lý do:** Một wire được khai báo với độ rộng bit không khớp với độ rộng của tín hiệu thực tế được gán vào nó (ở đây là rdata ban đầu được khai báo với [31:0] nhưng tim_prdata chỉ được khai báo với [30:0] bit, dẫn tới việc assign bị sai và compile error).
+**Cause:** A wire was declared with a width that did not match the signal assigned to it. Here, `rdata` was declared as [31:0] while `tim_prdata` was declared as only [30:0], so the assignment was invalid and caused a compile error.
 
-**Sửa lỗi:** Sửa lại khai báo độ rộng wire cho khớp đúng với interface signal tương ứng.
+**Fix:** Corrected the wire width declarations to match the corresponding interface signals.
 
-**Verification:** Compile lại toàn bộ RTL, xác nhận không còn warning/error về width mismatch trước khi tiếp tục chạy testcase.
-
----
-
-## Bug #2 — Hiện tượng dây mồ côi trong `timer_top.v`
-
-**Giai đoạn:** RTL bring-up, khi ghép nối các module con vào `timer_top`.
-
-**Triệu chứng:** Có wire được khai báo trong `timer_top.v` nhưng không được kết nối (port-map) vào bất kỳ instance module con nào — dấu hiệu của việc sửa code nhiều lần để lại khai báo thừa.
-
-**Lý do :** Trong quá trình chỉnh sửa cấu trúc kết nối giữa các module con (`apb_slave`, `register`, `counter_control`, `counter`, `interrupt`), một số wire tạm bị bỏ sót sau khi đổi cách nối hoặc các wire bị khai báo lặp lại do nhầm lẫn ( như việc 2 tín hiệu : set và clear được khai báo 2 lần: set, int_st, clear và int_clear do nhầm lẫn tín hiệu từ interrupt dẫn tới việc các wire bị thừa ) .
-
-**Sửa lỗi:** Rà soát lại toàn bộ danh sách wire trong `timer_top.v`, xóa các khai báo không còn được sử dụng, đảm bảo mọi wire đều có ít nhất 1 đầu driver và 1 đầu load.
-
-**Verification:** Compile lại, kiểm tra bằng compile warning để đảm bảo không còn wire bị dư thừa hoặc không được kết nối.
-
----
-## Bug #3 - Phát hiện lỗi logic RTL thông qua test case ở : reg_chk_all.v
-
-**Giai đoạn:** Sau khi chạy compile thành công và không có warning. Tiến hành chạy lần lượt các test case để kiểm tra lỗi logic và dừng lại ở case : `reg_chk_all.v`.
-
-**Triệu chứng:** Trong test case tiến hành gán các giá trị phù hợp cho thanh ghi TCR ( 12'h00) để cho counter chạy nhưng counter chạy bị sai chiều. Có nghĩa là thay vì chạy : 64'h0000_0000_0000_0001 nhưng lại chạy thành 64'h0000_0001_0000_0000. Đây là ví dụ điển hình của bit-ordering bug trong concatenation — lỗi rất dễ mắc khi ghép nhiều thanh ghi thành 1 vector rộng hơn, và rất khó phát hiện chỉ bằng cách nhìn lướt code vì compile vẫn pass bình thường, không có warning gì.
-
-**Lý do :** Giá trị cnt(count) được lưu trữ bởi 2 thanh ghi TDR0 ( 32 bit đầu) và TDR1 (32 bit sau) và giá trị count được gán đúng như sau : cnt = {TDR1,TDR0}.Thế nhưng trong quá trình gán cnt(count) xảy ra nhầm lẫn vị trí giữa 2 thanh ghi và count được gán thành : cnt = {TDR0,TDR1}.
-
-**Sửa lỗi:** Rà soát lại thứ tự các thanh ghi được gán cho cnt(count), hoán đổi lại vị trí thanh ghi bị nhầm lần.
-
-**Verification:** Chạy lại test case và counter hoạt động bình thường, cnt đã lưu trữ đúng giá trị và đúng chiều.
-
-## Bug #4 — Phát hiện lỗi logic RTL thông qua test case ở : reg_chk_all.v
-
-**Giai đoạn:** Sau khi chạy compile thành công và không có warning. Tiến hành chạy lần lượt các test case để kiểm tra lỗi logic và dừng lại ở case : `interrupt_chk.v`.
-
-**Triệu chứng:** Trong test case tiến hành gán các giá trị phù hợp cho thanh ghi TCR (12'h00) để counter chạy 3 clock (clk) sau đó dừng lại thì lúc này giá trị cnt = 3 và set up các giá trị cho tcmp gồm thanh ghi TCMP0 và TCMP1 ( Compare value) bằng với giá trị đếm (cnt) để tiến hành test cho sinh ra tín hiệu interrupt( tim_int). Nhưng kết quả cho ra thì tim_int không được sinh ra. 
-
-**Lý do :** Giá trị tcmp được lưu trữ bởi 2 thanh ghi TCMP0(32 bit đầu) và TCMP1(32 bit sau) và giá trị compare value được gán đúng như sau : tcmp {tcmp1, tcmp0}. Thế nhưng trong quá trình gán tcmp lại thành : tcmp {tcmp0,tcmp1} dẫn tới việc so sánh bị sai và tim_int không được sinh ra.
-
-**Sửa lỗi:** Hoán đổi lại vị trí thanh ghi trong tcmp.
-
-**Verification:** Chạy lại test case và tim_int được sinh ra.
-
-## Bug #5 - Phát hiện lỗi logic RTL thông qua test case ở : counter_control.v
-
-**Giai đoạn:** Sau khi chạy compile thành công và không có warning. Tiến hành chạy lần lượt các test case để kiểm tra lỗi logic và dừng lại ở case : `counter_control.v`.
-
-**Triệu chứng:** Trong quá trình tiến hành gán các giá trị cho thanh ghi TCR ( 12'h00) để kiểm tra tốc độ đếm của counter. Khi lần lượt gán các giá trị cho div_val (với các giá trị tương ứng thì tốc độ counter sẽ chạy phụ thuộc vào đó. Ví dụ với div_val = 4'b0010 thì cnt_int ( count_internal) sẽ đếm 4 chu kì clock thì counter mới đếm lên 1 theo công thức limit = ((8'h1 << div_val) - 1) và cnt_int sẽ reset về 0 ) bên trong thanh ghi TCR thì giá trị cnt(count) trả về bị sai không đúng với design spec dẫn tới việc các checker dùng để kiểm tra các case báo FAILED.
-
-**Lý do :** Giá trị limit bị gán sai công thức. Limit bị gán thành : limit = (8'h1 << div_val) . Thiếu trừ 1 dẫn tới việc bị sai số.
-
-**Sửa lỗi:** Sửa lại công thức limit cho đúng bằng cách thêm - 1.
-
-**Verification:** Chạy lại test case và liên tục thử các trường hợp div_val khác nhau để đảm bảo không còn sai số ở counter.
-
-## Bug #6 — FEC miss ở `apb_slave.v`: tổ hợp `psel=0 & penable=1` không hit
-
-**Giai đoạn:** Coverage closure, sau khi đã pass toàn bộ functional testcase.
-
-**Triệu chứng:** Expression Coverage của `apb_slave.v` chỉ đạt 93.75% (15/16 bins). QuestaSim FEC (Focused Expression Coverage) report chỉ rõ tại line 30 (`valid_access = tim_psel & tim_penable`), input term `tim_psel` chưa từng hit giá trị `_0` trong tổ hợp cần thiết.
-
-**Lý do:** Thay vì viết thêm test một cách mù quáng để "ép" hit tổ hợp này, đã phân tích ngược lại theo giao thức APB: PENABLE chỉ được phép assert đúng 1 chu kỳ sau khi PSEL đã lên 1 ở cycle trước — tổ hợp `psel=0 & penable=1` là trạng thái vi phạm protocol, không thể phát sinh nếu driver (`apb_write`/`apb_read` task trong testbench) tuân thủ đúng thứ tự APB chuẩn. Kết luận: đây không phải bug thiếu test, mà là bin coverage không thể đạt được về mặt cấu trúc.
-
-**Cách Xử Lý:** Exclude row FEC này qua Coverage GUI (`Exclude Selection FEC`), kèm comment giải thích lý do protocol để đưa vào Coverage Exclusion Justification Table.
+**Verification:** Recompiled the entire RTL and confirmed there were no more width mismatch warnings/errors before running testcases.
 
 ---
 
-## Bug #7 — Branch miss ở `register.v`: default case trong case(addr) không hit
+## Bug #2 — Orphan wires in `timer_top.v`
 
-**Giai đoạn:** Coverage closure.
+**Phase:** RTL bring-up, while connecting the submodules in `timer_top`.
 
-**Triệu chứng:** Branch Coverage của `register.v` đạt 96.15% (25/26), Statement Coverage 97.43% (38/39). Chỗ miss: line 55, `default: rdata = 32'h0;`.
+**Symptom:** Some wires were declared in `timer_top.v` but never connected (port-mapped) to any submodule instance, a sign of leftover declarations from repeated code edits.
 
-**Lý do:** Truy ngược lên tầng trên (`apb_slave.v`), xác nhận `addr_valid` (line 31) đã giới hạn `tim_paddr` chỉ được coi hợp lệ khi khớp đúng 1 trong 8 offset (TCR/TDR0/TDR1/TCMP0/TCMP1/TIER/TISR/THCSR), và `rd_en` chỉ được assert khi `addr_valid=1`. Case statement trong `register.v` liệt kê đúng 8 giá trị này — tức nhánh `default` chỉ có thể chạy nếu address decode ở tầng trên bị sai, điều không thể xảy ra trong thiết kế đúng.
+**Cause:** While restructuring the connections between the submodules (`apb_slave`, `register`, `counter_control`, `counter`, `interrupt`), some temporary wires were left behind after the wiring changed, and others were declared twice by mistake. For example, `set`/`int_st` and `clear`/`int_clear` were each declared twice because the signals coming from `interrupt` were confused, leaving redundant wires.
 
-**Cách Xử Lý:** Exclude cả Branch + Statement tại dòng 55, ghi rõ lý do address đã được validate ở tầng `apb_slave` trước khi vào `register`.
+**Fix:** Reviewed the full wire list in `timer_top.v` and removed unused declarations, making sure every wire has at least one driver and one load.
+
+**Verification:** Recompiled and checked the compile warnings to confirm no redundant or unconnected wires remained.
 
 ---
 
+## Bug #3 — RTL logic error found by testcase `reg_chk_all.v`
 
+**Phase:** After a clean compile with no warnings, testcases were run one by one to look for logic errors. The run stopped at `reg_chk_all.v`.
+
+**Symptom:** The testcase wrote suitable values to the TCR register (12'h00) to start the counter, but the count came out in the wrong order: instead of 64'h0000_0000_0000_0001, it produced 64'h0000_0001_0000_0000. This is a classic bit-ordering bug in concatenation. It is easy to make when joining several registers into a wider vector, and hard to spot by skimming the code because the compile passes without any warning.
+
+**Cause:** The counter value `cnt` is stored in two registers, TDR0 (lower 32 bits) and TDR1 (upper 32 bits), and should be assigned as `cnt = {TDR1, TDR0}`. The two registers were swapped, so `cnt` was assigned as `{TDR0, TDR1}`.
+
+**Fix:** Checked the register order in the `cnt` assignment and swapped the two registers back.
+
+**Verification:** Re-ran the testcase. The counter now works correctly, and `cnt` holds the right value in the right order.
+
+---
+
+## Bug #4 — RTL logic error found by testcase `interrupt_chk.v`
+
+**Phase:** After a clean compile with no warnings, testcases were run one by one to look for logic errors. The run stopped at `interrupt_chk.v`.
+
+**Symptom:** The testcase wrote suitable values to the TCR register (12'h00) so the counter ran for 3 clock cycles and then stopped (`cnt` = 3). It then set the compare value (registers TCMP0 and TCMP1) equal to `cnt` to trigger the interrupt signal `tim_int`. However, `tim_int` was never generated.
+
+**Cause:** The compare value `tcmp` is stored in two registers, TCMP0 (lower 32 bits) and TCMP1 (upper 32 bits), and should be assigned as `tcmp = {tcmp1, tcmp0}`. It was assigned as `{tcmp0, tcmp1}` instead, so the comparison was wrong and `tim_int` was not generated.
+
+**Fix:** Swapped the register positions in `tcmp` back to the correct order.
+
+**Verification:** Re-ran the testcase and `tim_int` is now generated.
+
+---
+
+## Bug #5 — RTL logic error found by testcase `counter_control.v`
+
+**Phase:** After a clean compile with no warnings, testcases were run one by one to look for logic errors. The run stopped at `counter_control.v`.
+
+**Symptom:** The testcase wrote different `div_val` values into the TCR register (12'h00) to check the counter speed. The counter speed depends on `div_val`: for example, with `div_val` = 4'b0010, the internal counter `cnt_int` counts 4 clock cycles before the main counter increments by 1 (using `limit = ((8'h1 << div_val) - 1)`), then `cnt_int` resets to 0. The returned `cnt` value was wrong and did not match the design spec, so the checkers reported FAILED.
+
+**Cause:** The `limit` formula was wrong. It was written as `limit = (8'h1 << div_val)`, missing the "- 1", which caused an off-by-one error.
+
+**Fix:** Corrected the formula by adding "- 1".
+
+**Verification:** Re-ran the testcase and tried many different `div_val` values to confirm the counter no longer has any counting error.
+
+---
+
+## Bug #6 — FEC miss in `apb_slave.v`: combination `psel=0 & penable=1` not hit
+
+**Phase:** Coverage closure, after all functional testcases had passed.
+
+**Symptom:** Expression Coverage of `apb_slave.v` reached only 93.75% (15/16 bins). The QuestaSim FEC (Focused Expression Coverage) report showed that at line 30 (`valid_access = tim_psel & tim_penable`), the input term `tim_psel` never hit the value `_0` in the required combination.
+
+**Cause:** Instead of blindly writing more tests to force this combination, I analyzed it against the APB protocol. PENABLE may only be asserted for exactly one cycle after PSEL has gone high in the previous cycle, so `psel=0 & penable=1` is a protocol-violating state. It cannot occur as long as the driver (the `apb_write`/`apb_read` tasks in the testbench) follows the standard APB sequence. Conclusion: this is not a missing test, but a coverage bin that is structurally unreachable.
+
+**Resolution:** Excluded this FEC row in the Coverage GUI (`Exclude Selection FEC`) with a comment explaining the protocol reason, to be included in the Coverage Exclusion Justification Table.
+
+---
+
+## Bug #7 — Branch miss in `register.v`: default case in `case(addr)` not hit
+
+**Phase:** Coverage closure.
+
+**Symptom:** Branch Coverage of `register.v` reached 96.15% (25/26) and Statement Coverage 97.43% (38/39). The miss is at line 55: `default: rdata = 32'h0;`.
+
+**Cause:** Tracing back to the upper level (`apb_slave.v`) confirmed that `addr_valid` (line 31) treats `tim_paddr` as valid only when it matches exactly one of the 8 offsets (TCR/TDR0/TDR1/TCMP0/TCMP1/TIER/TISR/THCSR), and `rd_en` is asserted only when `addr_valid=1`. The case statement in `register.v` lists exactly these 8 values, so the `default` branch could only run if the upper-level address decode were wrong, which cannot happen in a correct design.
+
+**Resolution:** Excluded both Branch and Statement coverage at line 55, noting that the address is already validated in `apb_slave` before it reaches `register`.
+
+---

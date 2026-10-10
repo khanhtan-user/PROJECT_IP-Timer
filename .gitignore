@@ -8,6 +8,6 @@ sim/transcript
 sim/vsim.dbg
 sim/vsim.wlf
 
-# Giữ lại thư mục report/ chứa coverage report và exclusion justification
+# Keep the folder report/ include coverage report and exclusion justification
 !report/
 !report/**
